@@ -18,7 +18,6 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 20
-        cache: 'npm'
 
     - name: Setup Java
       uses: actions/setup-java@v4
@@ -33,21 +32,13 @@ jobs:
         ndk-version: 25.1.8937393
         accept-licenses: true
 
-    - name: Cache Gradle packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle/**/*') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-
     - name: Install dependencies
       run: npm ci
+      working-directory: .
 
     - name: Build Release APK
       run: ./android/gradlew assembleRelease
+      working-directory: .
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
