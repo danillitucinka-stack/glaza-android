@@ -1,38 +1,58 @@
 name: Build Eye-Pro APK
+
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4  # Оновлено до v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4 # Оновлено до v4
-        with:
-          node-version: 20
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4 # Оновлено до v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: 17
+        distribution: 'temurin'
 
-      - name: Install dependencies
-        run: npm install
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 33
+        ndk-version: 25.1.8937393
+        accept-licenses: true
 
-      - name: Build APK
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease
+    - name: Cache Gradle packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('android/gradle/**/*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4 # Оновлено до v4! Це виправить твою помилку.
-        with:
-          name: EyePro-Release
-          path: android/app/build/outputs/apk/release/*.apk
+    - name: Install dependencies
+      run: npm ci
+      working-directory: .
+
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+      working-directory: android
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: eye-pro-apk
+        path: android/app/build/outputs/apk/release/app-release.apk
