@@ -1,4 +1,4 @@
-name: Build Eye-Pro APK
+name: Build Glaza APK
 
 on:
   push:
@@ -32,6 +32,28 @@ jobs:
         ndk-version: 25.1.8937393
         accept-licenses: true
 
+    - name: Debug - Show directory structure
+      run: |
+        echo "=== Project root ==="
+        ls -la
+        echo ""
+        echo "=== Android folder ==="
+        ls -la ./android
+        echo ""
+        echo "=== Android recursive ==="
+        find ./android -type f -o -type d | head -50
+
+    - name: Verify Gradle wrapper
+      run: |
+        if [ ! -f "./android/gradlew" ]; then
+          echo "ERROR: ./android/gradlew not found!"
+          echo "Expected location: $PWD/android/gradlew"
+          echo "Actual files in ./android:"
+          ls -la ./android
+          exit 1
+        fi
+        chmod +x ./android/gradlew
+
     - name: Install dependencies
       run: npm ci
       working-directory: .
@@ -43,5 +65,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: eye-pro-apk
+        name: glaza-apk
         path: android/app/build/outputs/apk/release/app-release.apk
