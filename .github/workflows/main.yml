@@ -39,17 +39,15 @@ jobs:
         path: |
           ~/.gradle/caches
           ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('android/gradle/**/*') }}
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/gradle/**/*') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
 
     - name: Install dependencies
       run: npm ci
-      working-directory: .
 
     - name: Build Release APK
-      run: ./gradlew assembleRelease
-      working-directory: android
+      run: ./android/gradlew assembleRelease
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
